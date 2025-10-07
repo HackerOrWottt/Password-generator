@@ -568,7 +568,7 @@ const PasswordGenerator = ({ user, token, onSaveToVault }) => {
   )
 }
 
-const VaultManager = ({ user, token }) => {
+const VaultManager = ({ user, token, refreshTrigger }) => {
   const [vaultItems, setVaultItems] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [loading, setLoading] = useState(false)
