@@ -885,11 +885,19 @@ const MainApp = ({ user, token, onLogout }) => {
           </TabsList>
 
           <TabsContent value="generator" className="space-y-6">
-            <PasswordGenerator />
+            <PasswordGenerator 
+              user={user} 
+              token={token} 
+              onSaveToVault={handleVaultSave}
+            />
           </TabsContent>
 
           <TabsContent value="vault" className="space-y-6">
-            <VaultManager user={user} token={token} />
+            <VaultManager 
+              user={user} 
+              token={token} 
+              refreshTrigger={vaultRefreshTrigger}
+            />
           </TabsContent>
         </Tabs>
       </div>
