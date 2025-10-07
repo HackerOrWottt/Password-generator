@@ -574,6 +574,7 @@ const VaultManager = ({ user, token, refreshTrigger }) => {
   const [loading, setLoading] = useState(false)
   const [editingItem, setEditingItem] = useState(null)
   const [showAddDialog, setShowAddDialog] = useState(false)
+  const [showPasswords, setShowPasswords] = useState({}) // Track which passwords are visible
   const [newItem, setNewItem] = useState({
     title: '',
     username: '',
