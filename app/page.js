@@ -749,7 +749,7 @@ const MainApp = ({ user, token, onLogout }) => {
               Password Generator
             </TabsTrigger>
             <TabsTrigger value="vault" className="data-[state=active]:bg-red-600">
-              Secure Vault ({user.email})
+              Secure Vault
             </TabsTrigger>
           </TabsList>
 
