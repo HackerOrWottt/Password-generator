@@ -255,20 +255,82 @@ const PasswordGenerator = ({ user, token, onSaveToVault }) => {
     }
     
     try {
-      await navigator.clipboard.writeText(generatedPassword)
+      // Try modern clipboard API first
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(generatedPassword)
+      } else {
+        // Fallback for older browsers or non-HTTPS
+        const textArea = document.createElement('textarea')
+        textArea.value = generatedPassword
+        textArea.style.position = 'fixed'
+        textArea.style.left = '-999999px'
+        textArea.style.top = '-999999px'
+        document.body.appendChild(textArea)
+        textArea.focus()
+        textArea.select()
+        document.execCommand('copy')
+        textArea.remove()
+      }
+      
       setCopied(true)
       toast.success('Password copied to clipboard!')
       
+      // Auto-clear clipboard after 15 seconds (only if modern API available)
       setTimeout(() => {
-        if (navigator.clipboard) {
-          navigator.clipboard.writeText('')
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText('').catch(() => {})
         }
         toast.info('Clipboard cleared for security')
       }, 15000)
       
       setTimeout(() => setCopied(false), 2000)
     } catch (err) {
-      toast.error('Failed to copy password')
+      console.error('Copy error:', err)
+      toast.error('Failed to copy password. Please select and copy manually.')
+    }
+  }
+
+  const handleSaveToVault = async () => {
+    if (!generatedPassword) {
+      toast.error('No password to save!')
+      return
+    }
+    
+    if (!saveData.title.trim()) {
+      toast.error('Please enter a title for this password')
+      return
+    }
+    
+    try {
+      // Encrypt the password client-side
+      const encryptionKey = `passkeeper_${user.email}_${user.id.slice(0, 8)}`
+      const encryptedPassword = CryptoJS.AES.encrypt(generatedPassword, encryptionKey).toString()
+      
+      const response = await fetch('/api/vault', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          title: saveData.title.trim(),
+          username: saveData.username.trim(),
+          encryptedPassword,
+          url: saveData.url.trim(),
+          notes: saveData.notes.trim()
+        })
+      })
+
+      if (response.ok) {
+        toast.success('Password saved to vault!')
+        setShowSaveDialog(false)
+        setSaveData({ title: '', username: '', url: '', notes: '' })
+        if (onSaveToVault) onSaveToVault() // Refresh vault if callback provided
+      } else {
+        toast.error('Failed to save password')
+      }
+    } catch (error) {
+      toast.error('Error saving password')
     }
   }
 
