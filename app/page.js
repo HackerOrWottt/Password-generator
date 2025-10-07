@@ -477,26 +477,83 @@ const PasswordGenerator = ({ user, token, onSaveToVault }) => {
             </div>
           </div>
 
-          <div className="flex gap-2">
-            <Button 
-              onClick={generatePassword} 
-              className="flex-1 bg-red-600 hover:bg-red-700"
-            >
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Generate New
-            </Button>
-            <Button 
-              onClick={copyToClipboard}
-              variant="outline"
-              className="flex-1 border-red-600 text-white hover:bg-red-900/30"
-            >
-              {copied ? (
-                <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
-              ) : (
-                <Copy className="h-4 w-4 mr-2" />
-              )}
-              {copied ? 'Copied!' : 'Copy'}
-            </Button>
+          <div className="space-y-3">
+            <div className="flex gap-2">
+              <Button 
+                onClick={generatePassword} 
+                className="flex-1 bg-red-600 hover:bg-red-700"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Generate New
+              </Button>
+              <Button 
+                onClick={copyToClipboard}
+                variant="outline"
+                className="flex-1 border-red-600 text-white hover:bg-red-900/30"
+              >
+                {copied ? (
+                  <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
+                ) : (
+                  <Copy className="h-4 w-4 mr-2" />
+                )}
+                {copied ? 'Copied!' : 'Copy'}
+              </Button>
+            </div>
+            
+            <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
+              <DialogTrigger asChild>
+                <Button 
+                  className="w-full bg-green-600 hover:bg-green-700"
+                  disabled={!generatedPassword}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Save to Vault
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="bg-black/90 border-red-900/50">
+                <DialogHeader>
+                  <DialogTitle className="text-white">Save Password to Vault</DialogTitle>
+                  <DialogDescription className="text-gray-400">
+                    Save your generated password to the secure vault
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <Input
+                    placeholder="Title (e.g. Gmail, Facebook) *"
+                    value={saveData.title}
+                    onChange={(e) => setSaveData({...saveData, title: e.target.value})}
+                    className="bg-gray-900/50 border-red-900/50 text-white"
+                  />
+                  <Input
+                    placeholder="Username or Email"
+                    value={saveData.username}
+                    onChange={(e) => setSaveData({...saveData, username: e.target.value})}
+                    className="bg-gray-900/50 border-red-900/50 text-white"
+                  />
+                  <Input
+                    placeholder="Website URL (optional)"
+                    value={saveData.url}
+                    onChange={(e) => setSaveData({...saveData, url: e.target.value})}
+                    className="bg-gray-900/50 border-red-900/50 text-white"
+                  />
+                  <Input
+                    placeholder="Notes (optional)"
+                    value={saveData.notes}
+                    onChange={(e) => setSaveData({...saveData, notes: e.target.value})}
+                    className="bg-gray-900/50 border-red-900/50 text-white"
+                  />
+                  <div className="bg-gray-900/50 border border-red-900/30 rounded-lg p-3">
+                    <p className="text-xs text-gray-400 mb-2">Password to save:</p>
+                    <p className="text-sm font-mono text-white break-all">{generatedPassword}</p>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button onClick={handleSaveToVault} className="bg-green-600 hover:bg-green-700">
+                    Save to Vault
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
 
           <div className="bg-gray-900/50 border border-red-900/30 rounded-lg p-3">
