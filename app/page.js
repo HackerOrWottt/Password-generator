@@ -285,18 +285,37 @@ const PasswordGenerator = ({ user, token, onSaveToVault }) => {
       
       if (copySuccess) {
         setCopied(true)
-        toast.success('Password copied to clipboard!')
+        toast.success('Password copied! Will auto-clear in 15 seconds.')
         
-        // Auto-clear clipboard after 15 seconds
-        setTimeout(() => {
+        // Auto-clear clipboard after 15 seconds with enhanced implementation
+        setTimeout(async () => {
           try {
             if (navigator.clipboard && window.isSecureContext) {
-              navigator.clipboard.writeText('').catch(() => {})
+              // Clear with empty string
+              await navigator.clipboard.writeText('')
+              toast.info('🔒 Clipboard cleared for security!')
+            } else {
+              // For older browsers, try to overwrite with empty content
+              const clearArea = document.createElement('textarea')
+              clearArea.value = ''
+              clearArea.style.position = 'fixed'
+              clearArea.style.left = '-999999px'
+              clearArea.style.top = '-999999px'
+              document.body.appendChild(clearArea)
+              clearArea.focus()
+              clearArea.select()
+              const cleared = document.execCommand('copy')
+              clearArea.remove()
+              
+              if (cleared) {
+                toast.info('🔒 Clipboard cleared for security!')
+              } else {
+                toast.warning('⚠️ Please manually clear your clipboard for security')
+              }
             }
-            toast.info('Clipboard cleared for security')
           } catch (e) {
-            // Silent fail for auto-clear
-            console.log('Auto-clear not available')
+            console.log('Auto-clear error:', e)
+            toast.warning('⚠️ Please manually clear your clipboard for security')
           }
         }, 15000)
         
