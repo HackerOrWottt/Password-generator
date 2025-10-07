@@ -842,41 +842,94 @@ const VaultManager = ({ user, token, refreshTrigger }) => {
             filteredItems.map((item) => (
               <Card key={item.id} className="bg-black/40 border-red-900/50">
                 <CardContent className="p-4">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-white">{item.title}</h3>
+                  <div className="space-y-3">
+                    {/* Header with title and actions */}
+                    <div className="flex justify-between items-start">
+                      <h3 className="font-semibold text-white text-lg">{item.title}</h3>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => copyPassword(item.encryptedPassword)}
+                          className="border-red-600 text-red-400 hover:bg-red-900/30"
+                          title="Copy Password"
+                        >
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => deleteVaultItem(item.id)}
+                          className="border-red-600 text-red-400 hover:bg-red-900/30"
+                          title="Delete Item"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Password field with show/hide */}
+                    <div className="space-y-2">
+                      <Label className="text-sm text-gray-400">Password</Label>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 bg-gray-900/50 border border-red-900/50 rounded-md px-3 py-2">
+                          <span className="font-mono text-white text-sm">
+                            {showPasswords[item.id] 
+                              ? decryptPassword(item.encryptedPassword)
+                              : '••••••••••••••••'
+                            }
+                          </span>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => togglePasswordVisibility(item.id)}
+                          className="border-red-600 text-red-400 hover:bg-red-900/30"
+                          title={showPasswords[item.id] ? 'Hide Password' : 'Show Password'}
+                        >
+                          {showPasswords[item.id] ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Other details */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {item.username && (
-                        <p className="text-sm text-gray-400 mt-1">
-                          <User className="inline h-3 w-3 mr-1" />
-                          {item.username}
-                        </p>
+                        <div>
+                          <Label className="text-sm text-gray-400">Username</Label>
+                          <p className="text-sm text-white mt-1">
+                            <User className="inline h-3 w-3 mr-1" />
+                            {item.username}
+                          </p>
+                        </div>
                       )}
                       {item.url && (
-                        <p className="text-sm text-gray-400">
-                          🌐 {item.url}
-                        </p>
-                      )}
-                      {item.notes && (
-                        <p className="text-sm text-gray-400 mt-2">{item.notes}</p>
+                        <div>
+                          <Label className="text-sm text-gray-400">Website</Label>
+                          <p className="text-sm text-white mt-1">
+                            🌐 <a href={item.url.startsWith('http') ? item.url : `https://${item.url}`} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer" 
+                                  className="text-red-400 hover:text-red-300 underline">
+                              {item.url}
+                            </a>
+                          </p>
+                        </div>
                       )}
                     </div>
-                    <div className="flex gap-2 ml-4">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => copyPassword(item.encryptedPassword)}
-                        className="border-red-600 text-red-400 hover:bg-red-900/30"
-                      >
-                        <Copy className="h-3 w-3" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => deleteVaultItem(item.id)}
-                        className="border-red-600 text-red-400 hover:bg-red-900/30"
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
+
+                    {item.notes && (
+                      <div>
+                        <Label className="text-sm text-gray-400">Notes</Label>
+                        <p className="text-sm text-gray-300 mt-1">{item.notes}</p>
+                      </div>
+                    )}
+
+                    {/* Timestamp */}
+                    <div className="pt-2 border-t border-gray-800">
+                      <p className="text-xs text-gray-500">
+                        Added: {new Date(item.createdAt).toLocaleDateString()}
+                      </p>
                     </div>
                   </div>
                 </CardContent>
