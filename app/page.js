@@ -142,7 +142,7 @@ const AuthPage = ({ onLogin }) => {
   )
 }
 
-const PasswordGenerator = () => {
+const PasswordGenerator = ({ user, token, onSaveToVault }) => {
   const [passwordLength, setPasswordLength] = useState([16])
   const [includeUppercase, setIncludeUppercase] = useState(true)
   const [includeLowercase, setIncludeLowercase] = useState(true)
@@ -153,6 +153,13 @@ const PasswordGenerator = () => {
   const [passwordStrength, setPasswordStrength] = useState(0)
   const [showPassword, setShowPassword] = useState(true)
   const [copied, setCopied] = useState(false)
+  const [showSaveDialog, setShowSaveDialog] = useState(false)
+  const [saveData, setSaveData] = useState({
+    title: '',
+    username: '',
+    url: '',
+    notes: ''
+  })
 
   // Character sets
   const charsets = {
