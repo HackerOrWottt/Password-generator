@@ -713,7 +713,7 @@ const VaultManager = ({ user, token, refreshTrigger }) => {
 
   useEffect(() => {
     fetchVaultItems()
-  }, [])
+  }, [refreshTrigger])
 
   const filteredItems = vaultItems.filter(item =>
     item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
