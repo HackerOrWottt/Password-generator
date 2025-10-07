@@ -255,38 +255,60 @@ const PasswordGenerator = ({ user, token, onSaveToVault }) => {
     }
     
     try {
-      // Try modern clipboard API first
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(generatedPassword)
-      } else {
-        // Fallback for older browsers or non-HTTPS
-        const textArea = document.createElement('textarea')
-        textArea.value = generatedPassword
-        textArea.style.position = 'fixed'
-        textArea.style.left = '-999999px'
-        textArea.style.top = '-999999px'
-        document.body.appendChild(textArea)
-        textArea.focus()
-        textArea.select()
-        document.execCommand('copy')
-        textArea.remove()
+      // Create a temporary textarea for copying (works in all environments)
+      const textArea = document.createElement('textarea')
+      textArea.value = generatedPassword
+      textArea.style.position = 'fixed'
+      textArea.style.left = '-999999px'
+      textArea.style.top = '-999999px'
+      document.body.appendChild(textArea)
+      textArea.focus()
+      textArea.select()
+      
+      let copySuccess = false
+      
+      try {
+        // Try modern clipboard API first
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(generatedPassword)
+          copySuccess = true
+        } else {
+          // Use execCommand as fallback
+          copySuccess = document.execCommand('copy')
+        }
+      } catch (copyError) {
+        // If clipboard API fails, still try execCommand
+        copySuccess = document.execCommand('copy')
       }
       
-      setCopied(true)
-      toast.success('Password copied to clipboard!')
+      textArea.remove()
       
-      // Auto-clear clipboard after 15 seconds (only if modern API available)
-      setTimeout(() => {
-        if (navigator.clipboard && window.isSecureContext) {
-          navigator.clipboard.writeText('').catch(() => {})
-        }
-        toast.info('Clipboard cleared for security')
-      }, 15000)
+      if (copySuccess) {
+        setCopied(true)
+        toast.success('Password copied to clipboard!')
+        
+        // Auto-clear clipboard after 15 seconds
+        setTimeout(() => {
+          try {
+            if (navigator.clipboard && window.isSecureContext) {
+              navigator.clipboard.writeText('').catch(() => {})
+            }
+            toast.info('Clipboard cleared for security')
+          } catch (e) {
+            // Silent fail for auto-clear
+            console.log('Auto-clear not available')
+          }
+        }, 15000)
+        
+        // Reset copy status after 2 seconds
+        setTimeout(() => setCopied(false), 2000)
+      } else {
+        toast.error('Copy failed. Please select the password text and copy manually.')
+      }
       
-      setTimeout(() => setCopied(false), 2000)
     } catch (err) {
       console.error('Copy error:', err)
-      toast.error('Failed to copy password. Please select and copy manually.')
+      toast.error('Copy failed. Please try again.')
     }
   }
 
