@@ -676,39 +676,65 @@ const VaultManager = ({ user, token, refreshTrigger }) => {
     }
   }
 
+  const togglePasswordVisibility = (itemId) => {
+    setShowPasswords(prev => ({
+      ...prev,
+      [itemId]: !prev[itemId]
+    }))
+  }
+
   const copyPassword = async (encryptedPassword) => {
     try {
       const decryptedPassword = decryptPassword(encryptedPassword)
       
-      // Try modern clipboard API first
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(decryptedPassword)
-      } else {
-        // Fallback for older browsers or non-HTTPS
-        const textArea = document.createElement('textarea')
-        textArea.value = decryptedPassword
-        textArea.style.position = 'fixed'
-        textArea.style.left = '-999999px'
-        textArea.style.top = '-999999px'
-        document.body.appendChild(textArea)
-        textArea.focus()
+      // Create a temporary textarea for copying (works in all environments)
+      const textArea = document.createElement('textarea')
+      textArea.value = decryptedPassword
+      textArea.style.position = 'fixed'
+      textArea.style.left = '-999999px'
+      textArea.style.top = '-999999px'
+      document.body.appendChild(textArea)
+      textArea.focus()
+      textArea.select()
+      
+      try {
+        // Try modern clipboard API first
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(decryptedPassword)
+        } else {
+          // Use execCommand as fallback
+          const success = document.execCommand('copy')
+          if (!success) throw new Error('execCommand failed')
+        }
+        
+        toast.success('Password copied to clipboard!')
+        
+        // Auto-clear clipboard after 15 seconds
+        setTimeout(() => {
+          try {
+            if (navigator.clipboard && window.isSecureContext) {
+              navigator.clipboard.writeText('').catch(() => {})
+            } else {
+              // For fallback method, we can't reliably clear clipboard
+              console.log('Clipboard should be cleared manually for security')
+            }
+            toast.info('Clipboard cleared for security')
+          } catch (e) {
+            console.log('Auto-clear not available, clear clipboard manually')
+          }
+        }, 15000)
+        
+      } catch (copyError) {
+        // If all copy methods fail, show manual copy instruction
         textArea.select()
-        document.execCommand('copy')
-        textArea.remove()
+        toast.error('Please press Ctrl+C (or Cmd+C on Mac) to copy the selected password')
       }
       
-      toast.success('Password copied!')
+      textArea.remove()
       
-      // Auto-clear clipboard after 15 seconds (only if modern API available)
-      setTimeout(() => {
-        if (navigator.clipboard && window.isSecureContext) {
-          navigator.clipboard.writeText('').catch(() => {})
-        }
-        toast.info('Clipboard cleared for security')
-      }, 15000)
     } catch (error) {
       console.error('Copy error:', error)
-      toast.error('Failed to copy password. Please select and copy manually.')
+      toast.error('Failed to decrypt password')
     }
   }
 
