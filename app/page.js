@@ -845,7 +845,12 @@ const VaultManager = ({ user, token }) => {
 
 const MainApp = ({ user, token, onLogout }) => {
   const [activeTab, setActiveTab] = useState('generator')
-  const [generatedPassword, setGeneratedPassword] = useState('')
+  const [vaultRefreshTrigger, setVaultRefreshTrigger] = useState(0)
+
+  const handleVaultSave = () => {
+    setVaultRefreshTrigger(prev => prev + 1)
+    setActiveTab('vault') // Switch to vault tab to see the saved password
+  }
 
   return (
     <div className="min-h-screen bg-gradient-primary p-4">
