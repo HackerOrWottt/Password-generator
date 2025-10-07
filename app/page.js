@@ -678,17 +678,36 @@ const VaultManager = ({ user, token, refreshTrigger }) => {
   const copyPassword = async (encryptedPassword) => {
     try {
       const decryptedPassword = decryptPassword(encryptedPassword)
-      await navigator.clipboard.writeText(decryptedPassword)
+      
+      // Try modern clipboard API first
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(decryptedPassword)
+      } else {
+        // Fallback for older browsers or non-HTTPS
+        const textArea = document.createElement('textarea')
+        textArea.value = decryptedPassword
+        textArea.style.position = 'fixed'
+        textArea.style.left = '-999999px'
+        textArea.style.top = '-999999px'
+        document.body.appendChild(textArea)
+        textArea.focus()
+        textArea.select()
+        document.execCommand('copy')
+        textArea.remove()
+      }
+      
       toast.success('Password copied!')
       
+      // Auto-clear clipboard after 15 seconds (only if modern API available)
       setTimeout(() => {
-        if (navigator.clipboard) {
-          navigator.clipboard.writeText('')
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText('').catch(() => {})
         }
         toast.info('Clipboard cleared for security')
       }, 15000)
     } catch (error) {
-      toast.error('Failed to copy password')
+      console.error('Copy error:', error)
+      toast.error('Failed to copy password. Please select and copy manually.')
     }
   }
 
